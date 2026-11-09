@@ -47,7 +47,7 @@ verification checklist with the simulator, troubleshooting, updating and uninsta
 ## Mobile view (same Wi-Fi)
 
 A phone on the same Wi-Fi can watch live motor status, plots and alarms, and press **E-STOP**.
-An administrator turns it on with **Mobile** in the HMI's status bar; the phone scans the QR
+An administrator turns it on with **Mobile view** in the HMI's top bar; the phone scans the QR
 code, accepts the HMI's own certificate once, and signs in with an HMI account. Enable,
 motion and reset stay at the laptop. Details: [User Manual, section 13](docs/USER_MANUAL.md).
 

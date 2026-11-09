@@ -57,6 +57,13 @@ class MainWindow(QMainWindow):
         self.ctx = ctx
         self.setWindowTitle(f"{APP_NAME} {__version__}")
         self.resize(1500, 940)
+        scr = QApplication.primaryScreen()
+        if scr is not None:
+            avail = scr.availableGeometry()
+            if avail.width() < 1500 or avail.height() < 940:
+                # small or scaled screen (laptops, WSL): fit it so the status bar stays visible
+                self.resize(min(1500, avail.width()), min(940, avail.height()))
+                self.setWindowState(self.windowState() | Qt.WindowMaximized)
         self._locked = False
 
         # ---- header ----------------------------------------------------
@@ -84,6 +91,9 @@ class MainWindow(QMainWindow):
         hl.addStretch(1)
         self.user_lbl = QLabel("")
         hl.addWidget(self.user_lbl)
+        self.mobile_hdr_btn = button("Mobile view", slot=self._mobile_dialog,
+                                     tip="Phone view for the same Wi-Fi: live status, alarms and E-STOP")
+        hl.addWidget(self.mobile_hdr_btn)
         self.lock_btn = button("Lock", slot=self.lock)
         self.logout_btn = button("Log out", slot=self.logout)
         hl.addWidget(self.lock_btn)
@@ -183,6 +193,7 @@ class MainWindow(QMainWindow):
         self._idle_timer.start(5000)
         self._estop_latched = False
         self.apply_session()
+        self.update_mobile_status()
         if ctx.settings.mobile_enabled:
             QTimer.singleShot(0, self._autostart_mobile)
 
@@ -453,9 +464,11 @@ class MainWindow(QMainWindow):
         m = self.mobile
         if not m.running:
             self.mobile_btn.setText("Mobile: off")
+            self.mobile_hdr_btn.setText("Mobile view: off")
         else:
             n = m.viewers
             self.mobile_btn.setText(f"Mobile: on · {n} phone{'s' if n != 1 else ''}")
+            self.mobile_hdr_btn.setText(f"Mobile view: on ({n})")
 
     def _mobile_dialog(self) -> None:
         MobileDialog(self.ctx, self.mobile, self).exec()

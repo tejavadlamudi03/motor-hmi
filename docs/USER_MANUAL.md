@@ -445,7 +445,7 @@ A phone or tablet on the same Wi-Fi as the HMI laptop can show live motor status
 
 **Turn it on (administrator)**
 
-1. Click **Mobile: off** at the right end of the status bar.
+1. Click **Mobile view: off** in the top bar, next to *Lock* (or **Mobile: off** at the right end of the status bar).
 2. Keep port `8443`, or choose another free port, and click **Turn on**. The HMI remembers this and starts the phone view with every start.
 3. The dialog shows the link (for example `https://192.168.1.23:8443/`), a QR code and the certificate fingerprint. The status bar button then reads *Mobile: on · n phones*.
 
