@@ -14,7 +14,7 @@ Simulator** app lets you test everything without hardware.
 | Any STM32 MCSDK 5.x power board | USB serial | same |
 | moteus profiles | **Virtual CAN-FD bus** + **Motor Simulator** app | real moteus driver path against simulated controllers |
 
-**Status (v1.0.0):** all 69 automated tests pass, including end-to-end runs against the
+**Status (v1.0.0):** all 80 automated tests pass, including end-to-end runs against the
 Motor Simulator. Not yet validated on real r4.11 / IHM08M1 hardware or on Windows; start
 with the motor unloaded and conservative limits.
 
@@ -43,6 +43,15 @@ Follow **[docs/INSTALLATION.md](docs/INSTALLATION.md)** ([Word](docs/INSTALLATIO
 It covers the Linux packaged release (no Python needed, installs read-only to
 `/opt/motor-hmi`), Linux from source, Windows 10/11, USB adapter setup, first start, a
 verification checklist with the simulator, troubleshooting, updating and uninstalling.
+
+## Mobile view (same Wi-Fi)
+
+A phone on the same Wi-Fi can watch live motor status, plots and alarms, and press **E-STOP**.
+An administrator turns it on with **Mobile** in the HMI's status bar; the phone scans the QR
+code, accepts the HMI's own certificate once, and signs in with an HMI account. Enable,
+motion and reset stay at the laptop. Details: [User Manual, section 13](docs/USER_MANUAL.md).
+
+![Mobile view: sign-in, live dashboard, E-stop](docs/images/mobile_view.png)
 
 ## Documentation
 
@@ -77,7 +86,7 @@ After editing a `.md` file, regenerate the Word versions with
 
 ## Tests
 
-69 tests, all without hardware, including HMI to simulator over a virtual CAN-FD bus:
+80 tests, all without hardware, including HMI to simulator over a virtual CAN-FD bus:
 
 ```bash
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 QT_QPA_PLATFORM=offscreen python -m pytest -q tests

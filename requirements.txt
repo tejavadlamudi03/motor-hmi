@@ -8,4 +8,6 @@ scipy==1.18.1
 pyserial==3.5
 python-can==4.6.1
 msgpack==1.2.4             # python-can udp_multicast (virtual CAN-FD bus)
+cryptography==50.0.2       # mobile view: per-install HTTPS certificate
+segno==1.6.6               # mobile view: QR code for the phone link
 pywin32; platform_system == "Windows"

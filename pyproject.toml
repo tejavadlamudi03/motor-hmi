@@ -17,6 +17,8 @@ dependencies = [
     "pyserial>=3.5",
     "python-can>=4.3",
     "msgpack>=1.0",
+    "cryptography>=42",
+    "segno>=1.6",
     "pywin32; platform_system == 'Windows'",
 ]
 
@@ -31,6 +33,9 @@ motor-hmi-gui = "moteus_hmi.__main__:run"
 
 [tool.setuptools.packages.find]
 include = ["moteus_hmi*"]
+
+[tool.setuptools.package-data]
+"moteus_hmi.remote" = ["web/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

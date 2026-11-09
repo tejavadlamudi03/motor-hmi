@@ -1,0 +1,104 @@
+/* Motor HMI mobile view. ISA-101 style: neutral greys, colour only for
+   abnormal states (red = trip / E-stop, amber = comm loss, blue = enabled). */
+:root {
+  --bg: #e9ecef; --card: #ffffff; --text: #1d232a; --muted: #5f6b76; --line: #d3d8dd;
+  --accent: #1565c0; --alarm: #c62828; --alarm-bg: #fdecea; --warn: #9a5b00; --warn-bg: #fff4e0;
+  --estop: #c62828; --estop-press: #8e1b1b; --plot: #1565c0; --grid: #e3e7eb;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161a; --card: #1b2127; --text: #e6e9ec; --muted: #98a3ae; --line: #2c343c;
+    --accent: #64a8f0; --alarm: #ff6b61; --alarm-bg: #3a1c1b; --warn: #f0b860; --warn-bg: #362a14;
+    --estop: #d32f2f; --estop-press: #9a2020; --plot: #64a8f0; --grid: #262e36;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+button, input { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px 10px; background: var(--card);
+  border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; flex: 1; }
+.pill { font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line);
+  color: var(--muted); white-space: nowrap; }
+.pill.live { color: var(--text); }
+.pill.lost { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.pill.stopped { color: #fff; background: var(--alarm); border-color: transparent; }
+.ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+
+.view { max-width: 640px; margin: 0 auto; padding: 12px 16px 120px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  margin: 0 0 12px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 15px; margin: 0 0 8px; font-weight: 600; }
+.muted { color: var(--muted); }
+
+.login { margin-top: 10vh; display: flex; flex-direction: column; gap: 6px; }
+.login label { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.login input { padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.primary { margin-top: 14px; padding: 13px; border: 0; border-radius: 8px; background: var(--accent);
+  color: #fff; font-weight: 600; }
+.primary:disabled { opacity: .6; }
+.error { color: var(--alarm); min-height: 1.4em; margin: 6px 0 0; }
+
+.banner { border-radius: 10px; padding: 12px 14px; margin: 0 0 12px; font-weight: 600;
+  background: var(--alarm-bg); color: var(--alarm); border: 1px solid var(--alarm); }
+.banner.warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+
+.tabs { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 12px; padding-bottom: 2px; }
+.tabs button { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+.tabs button.on { border-color: var(--text); font-weight: 600; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.dot.armed { background: var(--accent); } .dot.trip { background: var(--alarm); } .dot.nocomm { background: var(--warn); }
+
+.state-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.state { font-weight: 700; letter-spacing: .04em; padding: 2px 10px; border-radius: 6px;
+  border: 1px solid var(--line); color: var(--muted); }
+.state.armed { color: #fff; background: var(--accent); border-color: transparent; }
+.state.trip { color: #fff; background: var(--alarm); border-color: transparent; }
+.state.nocomm { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.mode { font-size: 14px; }
+.reason { color: var(--alarm); margin: 8px 0 0; font-size: 14px; }
+
+.big { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 6px; }
+.tile { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 8px; background: var(--bg); min-width: 0; }
+.label { font-size: 12px; color: var(--muted); }
+.num { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
+.unit { font-size: 12px; color: var(--muted); }
+.small { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin: 10px 0 0; }
+.small div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--grid); padding: 5px 0; }
+.small dt { color: var(--muted); font-size: 14px; } .small dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
+.stale .num, .stale dd { color: var(--muted); }
+
+.plot-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.plot-head h2 { margin: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: none; padding: 6px 10px; font-size: 13px; }
+.seg button.on { background: var(--text); color: var(--card); }
+#plot { width: 100%; height: 180px; display: block; }
+.note { font-size: 13px; margin: 6px 0 0; }
+
+.alarms { list-style: none; margin: 0; padding: 0; }
+.alarms li { display: grid; grid-template-columns: auto auto 1fr; gap: 8px; padding: 7px 0;
+  border-bottom: 1px solid var(--grid); font-size: 14px; }
+.alarms li:last-child { border-bottom: 0; }
+.alarms .t { color: var(--muted); font-variant-numeric: tabular-nums; }
+.alarms .m { font-weight: 600; }
+.alarms li.trip .msg { color: var(--alarm); }
+.alarms li.warn .msg { color: var(--warn); }
+.alarms li.cleared .msg { color: var(--muted); }
+
+.foot { font-size: 13px; text-align: center; margin: 8px 0 0; }
+
+.estop-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; padding: 10px 16px
+  calc(env(safe-area-inset-bottom) + 10px); background: linear-gradient(transparent, var(--bg) 30%); }
+.estop { display: block; width: 100%; max-width: 608px; margin: 0 auto; min-height: 64px; border: 0;
+  border-radius: 14px; background: var(--estop); color: #fff; font-size: 24px; font-weight: 800;
+  letter-spacing: .08em; box-shadow: 0 2px 0 var(--estop-press); touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; user-select: none; }
+.estop:active, .estop.sent { background: var(--estop-press); }

@@ -28,6 +28,8 @@ class AppSettings:
     motor_limits: dict = field(default_factory=dict)   # "id" -> limits dict
     filters: dict = field(default_factory=dict)        # signal -> chain specs
     approved_firmware_sha256: list = field(default_factory=list)
+    mobile_enabled: bool = False          # phone view on the same Wi-Fi (admin switch)
+    mobile_port: int = 8443
 
     def limits_for(self, motor_id: int) -> SafetyLimits:
         d = self.motor_limits.get(str(motor_id), self.default_limits)

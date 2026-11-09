@@ -61,3 +61,15 @@ controls as the trust anchor:
 * code-signed builds and verification of the published SHA-256 checksums
 * forwarding the audit trail to central storage (SIEM / syslog) if your QA system
   requires it; the export function gives JSONL plus a verification report
+
+## Mobile view
+
+* Off by default. Only an administrator can turn it on (status bar → *Mobile*); the setting is stored in the signed settings file.
+* Answers only loopback, private (RFC 1918 / ULA) and link-local addresses; other connections are closed before TLS.
+* HTTPS only (TLS 1.2 or newer) with a per-installation EC P-256 certificate. The private key is encrypted with a key derived from the installation key. Check the SHA-256 fingerprint shown in the HMI when a phone first connects.
+* Sign-in uses the HMI user store (scrypt, lockout, disabled accounts). Users who must change their password are refused until they do so at the laptop. At most 10 sign-in attempts per minute per address.
+* Session: random 256-bit token in an `HttpOnly; Secure; SameSite=Strict` cookie; idle timeout = the HMI inactivity timeout; 12 h maximum; ends at once when the account is disabled or deleted.
+* The phone can only read state and press E-STOP, which also needs a per-session CSRF token. There are no enable, motion, reset, parameter or configuration endpoints.
+* Strict Content-Security-Policy (no inline script, no external resources), `X-Frame-Options: DENY`, `Cache-Control: no-store`.
+* Audit: `mobile.server_start` / `server_stop`, `mobile.enabled` / `disabled`, `mobile.login` (ok, failed, denied), `mobile.logout`, `mobile.estop`, each with the phone's IP address.
+* Residual risk: anyone on the same Wi-Fi can reach the sign-in page. Use a protected (WPA2/WPA3) network, not an open or guest network.

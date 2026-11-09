@@ -14,11 +14,13 @@ from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel, QMain
 from .. import APP_NAME, __version__
 from ..core.controllers import F_FW_WATCHDOG, get_profile
 from ..core.safety import SafetyLimits, Severity
+from ..remote.mobile_server import MobileServer
 from ..security.auth import Perm
 from . import theme
 from .connection_panel import ConnectionPanel
 from .context import AppContext
 from .login import LoginDialog
+from .mobile_dialog import MobileDialog
 from .tabs.about_tab import AboutTab
 from .tabs.admin_tab import AdminTab
 from .tabs.bus_tab import BusTab
@@ -135,13 +137,24 @@ class MainWindow(QMainWindow):
         self.counts = QLabel("RX 0 · TX 0")
         self.loop_lbl = QLabel("— Hz")
         self.clear_count_btn = button("Clear count", slot=self._clear_counts)
+        self.mobile_btn = button("Mobile: off", slot=self._mobile_dialog,
+                                 tip="Phone view for the same Wi-Fi: live status, alarms and E-STOP")
         for w in (self.rec_btn, self.clear_btn, self.en_led, self.en_lbl, self.rx_rate, self.tx_rate,
-                  self.load, self.counts, self.loop_lbl, self.clear_count_btn):
+                  self.load, self.counts, self.loop_lbl, self.clear_count_btn, self.mobile_btn):
             sb.addPermanentWidget(w)
         self._last_bus = None
 
         # ---- wiring --------------------------------------------------------
         w = ctx.worker
+        # Phone view (off until an administrator turns it on). The E-stop it
+        # sends goes straight to the worker's thread-safe estop().
+        self.mobile = MobileServer(ctx.users, ctx.audit_log, ctx.keystore, ctx.paths.security,
+                                   estop_fn=w.estop, idle_timeout_s=ctx.settings.session_timeout_min * 60)
+        self.mobile.estop_requested.connect(self._on_mobile_estop)
+        self.mobile.viewers_changed.connect(lambda _n: self.update_mobile_status())
+        w.connection_changed.connect(self.mobile.state.set_connection)
+        w.telemetry.connect(lambda b: self.mobile.running and self.mobile.state.update_batch(b))
+        w.alarm.connect(lambda a: self.mobile.running and self.mobile.state.add_alarm(a))
         w.connection_changed.connect(self._on_connection)
         w.devices_changed.connect(self._on_devices)
         w.telemetry.connect(self._on_batch)
@@ -170,6 +183,8 @@ class MainWindow(QMainWindow):
         self._idle_timer.start(5000)
         self._estop_latched = False
         self.apply_session()
+        if ctx.settings.mobile_enabled:
+            QTimer.singleShot(0, self._autostart_mobile)
 
     # ------------------------------------------------------------------
     def apply_session(self) -> None:
@@ -424,11 +439,39 @@ class MainWindow(QMainWindow):
         self.apply_session()
         self.lock(reason="logout")
 
+    # ---- mobile view -------------------------------------------------------
+    def _autostart_mobile(self) -> None:
+        try:
+            self.mobile.start(int(self.ctx.settings.mobile_port))
+        except OSError as e:
+            self.ctx.audit("mobile.autostart", {"port": self.ctx.settings.mobile_port, "error": str(e)}, "failed")
+            self.statusBar().showMessage(f"Mobile view could not start on port "
+                                         f"{self.ctx.settings.mobile_port}: {e}", 15000)
+        self.update_mobile_status()
+
+    def update_mobile_status(self) -> None:
+        m = self.mobile
+        if not m.running:
+            self.mobile_btn.setText("Mobile: off")
+        else:
+            n = m.viewers
+            self.mobile_btn.setText(f"Mobile: on · {n} phone{'s' if n != 1 else ''}")
+
+    def _mobile_dialog(self) -> None:
+        MobileDialog(self.ctx, self.mobile, self).exec()
+        self.update_mobile_status()
+
+    def _on_mobile_estop(self, reason: str) -> None:
+        # The stop itself already happened on the worker thread.
+        self.statusBar().showMessage(f"EMERGENCY STOP: {reason}", 0)
+        self.tab_by_type["TestTab"].live.setChecked(False)
+
     def closeEvent(self, ev) -> None:
         armed = [m for m, st in self.ctx.status.items() if st.armed]
         if armed and not confirm(self, "Exit", f"Motors {armed} are enabled. Exiting stops all motors."):
             ev.ignore()
             return
         self.ctx.audit("app.exit")
+        self.mobile.stop()
         self.ctx.worker.shutdown()
         ev.accept()

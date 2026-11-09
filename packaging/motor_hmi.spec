@@ -7,11 +7,12 @@ from PyInstaller.utils.hooks import collect_submodules, copy_metadata
 
 block_cipher = None
 hidden = (collect_submodules("moteus") + collect_submodules("can.interfaces")
-          + ["serial.tools.list_ports", "pyqtgraph.graphicsItems", "importlib_metadata"])
+          + ["serial.tools.list_ports", "pyqtgraph.graphicsItems", "importlib_metadata", "segno"])
 if sys.platform == "win32":
     hidden += ["win32crypt", "win32api", "win32file", "pywintypes"]
 
 datas = copy_metadata("moteus") + copy_metadata("python-can")
+datas += [("../moteus_hmi/remote/web", "moteus_hmi/remote/web")]   # mobile view page
 
 a = Analysis(
     ["../moteus_hmi/__main__.py"],

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d232a">
+<meta name="referrer" content="no-referrer">
+<title>Motor HMI Mobile</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><img src="icon.svg" alt="" width="22" height="22"><span>Motor HMI</span></div>
+  <span id="link" class="pill">Connecting</span>
+  <button id="logout" class="ghost" type="button" hidden>Sign out</button>
+</header>
+
+<main id="login-view" class="view" hidden>
+  <form id="login-form" class="card login" autocomplete="on">
+    <h1>Sign in</h1>
+    <p class="muted">Use your Motor HMI account. This page works only on the same Wi-Fi as the HMI laptop.</p>
+    <label for="user">User name</label>
+    <input id="user" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+    <label for="pass">Password</label>
+    <input id="pass" name="password" type="password" autocomplete="current-password" required>
+    <button id="login-btn" type="submit" class="primary">Sign in</button>
+    <p id="login-error" class="error" role="alert"></p>
+  </form>
+</main>
+
+<main id="dash-view" class="view" hidden>
+  <section id="banner" class="banner" role="status" hidden></section>
+  <nav id="motor-tabs" class="tabs" aria-label="Motors"></nav>
+
+  <section class="card" id="motor-card">
+    <div class="state-row">
+      <span id="m-state" class="state">NO DATA</span>
+      <span id="m-mode" class="muted mode"></span>
+    </div>
+    <p id="m-reason" class="reason" hidden></p>
+    <div class="big">
+      <div class="tile"><span class="label">Position</span><span id="v-position" class="num">-</span><span class="unit">rev</span></div>
+      <div class="tile"><span class="label">Velocity</span><span id="v-velocity" class="num">-</span><span class="unit">rev/s</span></div>
+      <div class="tile"><span class="label">Torque</span><span id="v-torque" class="num">-</span><span class="unit">N·m</span></div>
+    </div>
+    <dl class="small">
+      <div><dt>Bus voltage</dt><dd id="v-voltage">-</dd></div>
+      <div><dt>Board temp</dt><dd id="v-temperature">-</dd></div>
+      <div><dt>Motor temp</dt><dd id="v-motor_temperature">-</dd></div>
+      <div><dt>Power</dt><dd id="v-power">-</dd></div>
+      <div><dt>Q current</dt><dd id="v-q_current">-</dd></div>
+      <div><dt>Following error</dt><dd id="v-position_error">-</dd></div>
+    </dl>
+  </section>
+
+  <section class="card">
+    <div class="plot-head">
+      <h2>Live plot</h2>
+      <div class="seg" id="plot-sel" role="group" aria-label="Signal">
+        <button type="button" data-sig="position" class="on">Position</button>
+        <button type="button" data-sig="velocity">Velocity</button>
+        <button type="button" data-sig="torque">Torque</button>
+      </div>
+    </div>
+    <canvas id="plot" aria-label="Live plot of the selected signal, last 20 seconds"></canvas>
+    <p class="muted note" id="plot-range">Last 20 s</p>
+  </section>
+
+  <section class="card">
+    <h2>Alarms</h2>
+    <ul id="alarms" class="alarms"><li class="muted">No alarms</li></ul>
+  </section>
+
+  <p class="foot muted">View only: enable, motion and reset stay at the HMI laptop. <span id="age"></span></p>
+  <div class="estop-dock" id="estop-dock">
+    <button id="estop" class="estop" type="button">E-STOP</button>
+  </div>
+</main>
+</body>
+</html>

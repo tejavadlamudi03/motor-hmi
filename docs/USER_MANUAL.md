@@ -10,7 +10,7 @@ This manual is for operators and commissioning engineers. Architecture, protocol
 | --- | --- |
 | Version | 1.0.0 |
 | Source code | `~/moteus_hmi` (Python 3.12, PySide6 6.12, moteus library 1.1.3) |
-| Verification | 69 automated tests, all passing; end-to-end runs against the Motor Simulator |
+| Verification | 80 automated tests, all passing; end-to-end runs against the Motor Simulator |
 | Not yet validated | real moteus r4.11 and X-NUCLEO-IHM08M1 hardware; a Windows build |
 
 > The software E-stop and trips in this HMI are not a safety-rated function. Every machine needs a hard-wired emergency stop that removes motor power independently of the PC.
@@ -45,6 +45,7 @@ Motor HMI lets an operator connect to one or more motor controllers, enable them
 - Parameter read/write/save with signed export and import, PID tuning with a step-response test, and firmware version read-out and upgrade.
 - Safety supervision: limits, trips, latched E-stop and per-node fault isolation.
 - Security: four user roles, scrypt passwords, account lockout, auto-lock and an HMAC-chained audit trail.
+- Mobile view: live status, plots, alarms and E-STOP on a phone on the same Wi-Fi (section 13).
 
 ### 2. Installation and first start
 
@@ -435,3 +436,48 @@ Most problems so far came from interface or ID settings, not from the motor. Che
 | Many *overruns* in the status bar | PC busy; GUI and control loop share the CPU | Close other apps or lower the loop rate; the controller watchdog still protects the motor |
 
 **Log files:** `logs/hmi.log` in the data folder (rotating, 5 × 5 MB). **Audit trail:** *Users & Audit* → **Verify integrity**.
+
+### 13. Mobile view (same Wi-Fi)
+
+A phone or tablet on the same Wi-Fi as the HMI laptop can show live motor status, plots and alarms, and can trigger the E-STOP. Enabling motors, commanding motion and resetting trips or the E-stop stay at the laptop, in sight of the machine.
+
+![Mobile view: sign-in, live dashboard and E-stop](images/mobile_view.png)
+
+**Turn it on (administrator)**
+
+1. Click **Mobile: off** at the right end of the status bar.
+2. Keep port `8443`, or choose another free port, and click **Turn on**. The HMI remembers this and starts the phone view with every start.
+3. The dialog shows the link (for example `https://192.168.1.23:8443/`), a QR code and the certificate fingerprint. The status bar button then reads *Mobile: on · n phones*.
+
+**Connect a phone**
+
+1. Join the same Wi-Fi as the laptop.
+2. Scan the QR code with the camera, or type the link into the browser.
+3. The browser warns that the certificate is not trusted, because the HMI made its own. Compare the fingerprint with the one in the dialog, then continue (Chrome: *Advanced → Proceed*; Safari: *Show Details → visit this website*).
+4. Sign in with your Motor HMI account. New users must first set their own password at the laptop.
+5. Optional: *Add to Home screen* gives the page its own icon.
+
+**What the phone shows**
+
+| Area | Content |
+|---|---|
+| Header badge | *Live*, *Link lost*, *No data*, *Bus off* or *E-STOP* |
+| Banner | E-stop active, active alarms, or the HMI not connected to the motors |
+| Motor tabs | one per motor; the dot is blue when enabled, red when tripped, amber on comm loss |
+| Status card | ENABLED, DISABLED, TRIPPED or NO COMM; trip reason or fault; position, velocity, torque, bus voltage, temperatures, power, Q current, following error |
+| Live plot | position, velocity or torque of the selected motor over the last 20 s |
+| Alarms | the 20 most recent alarms with time and motor |
+| **E-STOP** | stops all motors as soon as it is touched; the laptop shows *EMERGENCY STOP: mobile (user @ phone address)* |
+
+Reset the E-stop at the laptop. If the phone shows *E-STOP NOT CONFIRMED*, the request did not reach the HMI: use the laptop or the hardware E-stop.
+
+**Security.** The phone view is off until an administrator turns it on, and it answers only devices on the local network. The connection is HTTPS with a certificate made by this installation, and sign-in uses the HMI accounts, roles and lockout. A phone session ends after the HMI's inactivity timeout, or at once when the account is disabled. Every phone sign-in, sign-out and E-stop is in the audit trail with the phone's address. Up to 8 phones can watch at once. Use a protected (WPA2/WPA3) Wi-Fi, not an open or guest network.
+
+**If the phone cannot open the page**
+
+| Cause | Fix |
+|---|---|
+| Phone on another network (mobile data, guest Wi-Fi) | Join the same Wi-Fi; guest networks often block devices from reaching each other |
+| Firewall on the laptop | Windows: allow MotorHMI or Python on *Private networks*. Linux with ufw: `sudo ufw allow 8443/tcp` |
+| HMI running in WSL2 on Windows | Use mirrored networking and open the port in the Hyper-V firewall (Installation Guide, section 8) |
+| *Could not start* in the dialog | The port is in use: choose another port |

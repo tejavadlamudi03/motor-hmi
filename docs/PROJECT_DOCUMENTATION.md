@@ -9,7 +9,7 @@ Motor HMI 1.0.0 is a Python/PySide6 HMI for moteus and ST MCSDK motor controller
 | Version | 1.0.0 |
 | Source code | `~/moteus_hmi` (about 11,500 lines) |
 | Stack | Python 3.12, PySide6 6.12, pyqtgraph 0.14, moteus 1.1.3, python-can 4.6 |
-| Verification | 69 automated tests, all passing; end-to-end runs against the Motor Simulator |
+| Verification | 80 automated tests, all passing; end-to-end runs against the Motor Simulator |
 | Not yet validated | real moteus r4.11 and X-NUCLEO-IHM08M1 hardware; a Windows build |
 
 ## 1. Architecture
@@ -42,6 +42,7 @@ Motor HMI is one process with two threads: a UI thread that never touches the bu
 | StMcsdkBackend | bus worker | ST FCP frames over USB serial | `core/st_mcsdk_backend.py` |
 | moteus\_tool | child process | calibration and flashing; the worker releases the adapter meanwhile | `core/tools.py` |
 | Motor Simulator | separate process | virtual moteus nodes on the virtual CAN-FD bus | `sim/` |
+| Mobile server | own HTTPS threads | phone view on the same Wi-Fi: live state over Server-Sent Events, E-stop, sign-in with HMI accounts | `remote/` |
 
 **Why it is built this way**
 
@@ -192,15 +193,16 @@ The project is about 11,500 lines across four packages. `core` contains no widge
 | `ui/widgets.py`, `theme.py` | 530 | ParamSlider, HoldButton, LivePlot, MotorDial, Led, confirm dialogs; ISA-101-style theme |
 | `ui/tabs/*` | 2,945 | the 12 tabs (Test & Control is the largest, 649 lines) |
 | `sim/canfd_sim.py`, `plant.py`, `sim_window.py`, `__main__.py` | 1,249 | Motor Simulator: protocol node, plant model, window, CLI |
-| `tests/*` | 738 | 69 tests (section 7) |
+| `remote/mobile_server.py`, `certs.py`, `web/*`, `ui/mobile_dialog.py` | 1,296 | mobile view: HTTPS server, per-install certificate, phone page, HMI dialog |
+| `tests/*` | 999 | 80 tests (section 7) |
 | `packaging/*` | 177 | PyInstaller spec, Linux and Windows build scripts, installers, udev rule |
 | `docs/*` | 287 | HARDWARE, SAFETY, SECURITY, SIMULATOR, ADDING\_A\_CONTROLLER |
 
-**Dependencies:** moteus 1.1.3, PySide6 6.12, pyqtgraph 0.14, numpy, scipy (for moteus), pyserial, python-can 4.6 with msgpack, and pywin32 on Windows. Versions are pinned in `requirements.txt`.
+**Dependencies:** moteus 1.1.3, PySide6 6.12, pyqtgraph 0.14, numpy, scipy (for moteus), pyserial, python-can 4.6 with msgpack, cryptography and segno for the mobile view, and pywin32 on Windows. Versions are pinned in `requirements.txt`.
 
 ## 7. Testing and verification
 
-All 69 automated tests pass without hardware in about 25 seconds. The integration tests run the real moteus driver against the Motor Simulator over a virtual CAN-FD bus.
+All 80 automated tests pass without hardware in about 40 seconds. The integration tests run the real moteus driver against the Motor Simulator over a virtual CAN-FD bus.
 
 ```
 cd ~/moteus_hmi

@@ -49,7 +49,7 @@ The packaged release is a self-contained 121 MB archive: the new laptop needs no
 
 ### On the development PC
 
-1. Build the release. The script runs the 69 automated tests first and stops if one fails:
+1. Build the release. The script runs the 80 automated tests first and stops if one fails:
 
    ```bash
    cd ~/moteus_hmi
@@ -81,11 +81,11 @@ The packaged release is a self-contained 121 MB archive: the new laptop needs no
 - Adds the `motor-hmi` command (`/usr/local/bin`) and a menu entry.
 - Installs the udev rule for fdcanusb and ST-LINK adapters and adds you to the `dialout` group.
 
-Tested on 2026-11-09: release built (69 tests passed), archive and all 563 file checksums verified, `install.sh` run in an isolated test root, and the HMI and the simulator started from the release. The release has not yet been installed on a second physical laptop.
+Tested on 2026-11-09: release built (80 tests passed), archive and all 551 file checksums verified, `install.sh` run in an isolated test root, and the HMI and the simulator started from the release. The release has not yet been installed on a second physical laptop.
 
 ## 3. Option B: Linux from source
 
-A source install runs the same code from a Python virtual environment. Use it on developer laptops and on Linux versions too old for the packaged release. Tested on 2026-11-09 by unpacking the 393 KB source archive into a clean folder: all 69 tests passed, with the system Python 3.12.3 and with a Python 3.12.13 downloaded by `uv`.
+A source install runs the same code from a Python virtual environment. Use it on developer laptops and on Linux versions too old for the packaged release. Tested on 2026-11-09 by unpacking the 393 KB source archive into a clean folder: all 80 tests passed, with the system Python 3.12.3 and with a Python 3.12.13 downloaded by `uv`.
 
 1. Install the system packages. On Ubuntu 24.04 or Debian 13:
 
@@ -126,7 +126,7 @@ A source install runs the same code from a Python virtual environment. Use it on
    sudo udevadm control --reload-rules && sudo udevadm trigger
    sudo usermod -aG dialout $USER
    ```
-5. Run the tests. The last line must read `69 passed`:
+5. Run the tests. The last line must read `80 passed`:
 
    ```bash
    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 QT_QPA_PLATFORM=offscreen python -m pytest -q tests
@@ -163,7 +163,7 @@ On Windows, install from source first; it needs only Python. Build the installer
    ```
 
    If PowerShell refuses to run `Activate.ps1`, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then activate again.
-4. Run the tests. The last line must read `69 passed`:
+4. Run the tests. The last line must read `80 passed`:
 
    ```powershell
    $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"; $env:QT_QPA_PLATFORM = "offscreen"
@@ -244,7 +244,7 @@ The first start creates a new, empty security setup on that laptop. There are no
 
 An installation is good when the HMI drives the Motor Simulator on that laptop through the full loop. That takes about five minutes and needs no hardware. Tick each item on the new laptop.
 
-- [ ] Option B or C only: the test run ended with `69 passed`.
+- [ ] Option B or C only: the test run ended with `80 passed`.
 - [ ] Start the Motor Simulator: `motor-hmi --simulator` (packaged) or `python -m moteus_hmi.sim` (source). Two motor cards, CAN ID 1 and 2, and an amber *Waiting for the HMI* bar appear.
 - [ ] Start the HMI and sign in. Set **Controller** *mjbots moteus r4.11*, **Interface** *Motor Simulator app (virtual CAN-FD bus)*, **Bus group** `239.74.163.2`, **Bus port** `43113`, **CAN prefix** `0`, **Node IDs** blank. Click **Connect**.
 - [ ] The header shows **VIRTUAL CAN-FD · MOTOR SIMULATOR APP** and *Motors* lists ID 1 and ID 2. In the simulator the amber bar is gone and RX/TX count up.
@@ -275,6 +275,8 @@ Most installation problems are a missing system library, an old Linux version, o
 | Import errors or wrong library versions, ROS laptop | ROS `PYTHONPATH` loads its packages first | Start with `env -u PYTHONPATH …` |
 | Windows: `Activate.ps1 cannot be loaded` | PowerShell execution policy | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
 | Windows: HMI and simulator do not see each other | Firewall blocked Python's UDP traffic | Windows Security → Firewall → *Allow an app*: allow Python (or MotorHMI) on Private networks |
+| Phone cannot open the mobile view link | Phone on another or guest Wi-Fi, or the laptop firewall blocks the port | Same Wi-Fi; Windows: allow MotorHMI or Python on Private networks; Linux: `sudo ufw allow 8443/tcp` |
+| Phone cannot reach an HMI running in WSL2 | WSL2 has its own network address behind Windows | In `%UserProfile%\.wslconfig` set `networkingMode=mirrored` under `[wsl2]` (Windows 11), run `wsl --shutdown`, then in an administrator PowerShell: `New-NetFirewallHyperVRule -Name MotorHMI -DisplayName "Motor HMI mobile" -Direction Inbound -VMCreatorId '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}' -Protocol TCP -LocalPorts 8443` |
 
 The HMI's own log is `logs/hmi.log` in the data folder.
 
