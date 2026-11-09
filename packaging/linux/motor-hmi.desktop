@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Motor HMI
+Comment=Motor controller HMI (moteus, ST MCSDK)
+Exec=/opt/motor-hmi/MotorHMI
+Terminal=false
+Categories=Development;Engineering;

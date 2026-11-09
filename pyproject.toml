@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "motor-hmi"
+version = "1.0.0"
+description = "Secure operator / engineering HMI for mjbots moteus and ST MCSDK motor controllers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+dependencies = [
+    "moteus>=1.1.3,<2",
+    "PySide6>=6.6,<7",
+    "pyqtgraph>=0.13.7",
+    "numpy>=1.24",
+    "pyserial>=3.5",
+    "python-can>=4.3",
+    "msgpack>=1.0",
+    "pywin32; platform_system == 'Windows'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6.5"]
+
+[project.scripts]
+motor-hmi = "moteus_hmi.__main__:run"
+
+[project.gui-scripts]
+motor-hmi-gui = "moteus_hmi.__main__:run"
+
+[tool.setuptools.packages.find]
+include = ["moteus_hmi*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

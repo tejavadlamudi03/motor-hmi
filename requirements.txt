@@ -1,0 +1,11 @@
+# Pinned, tested versions (2026-11-09).  Regenerate a hash-locked file for
+# production builds with:  uv pip compile pyproject.toml --generate-hashes -o requirements.lock
+moteus==1.1.3
+PySide6==6.12.0
+pyqtgraph==0.14.0
+numpy==2.5.4
+scipy==1.18.1
+pyserial==3.5
+python-can==4.6.1
+msgpack==1.2.4             # python-can udp_multicast (virtual CAN-FD bus)
+pywin32; platform_system == "Windows"

@@ -1,0 +1,11 @@
+.venv/
+.build-venv/
+build/
+dist/
+packaging/build/
+packaging/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.~lock.*#
